@@ -1,0 +1,9 @@
+{
+  "cylinders": 8,
+  "displacement": 400,
+  "horsepower": 150,
+  "weight": 4500,
+  "acceleration": 12,
+  "model_year": 73,
+  "origin": 1
+}

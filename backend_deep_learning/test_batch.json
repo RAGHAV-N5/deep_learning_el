@@ -1,0 +1,29 @@
+[
+  {
+    "cylinders": 8,
+    "displacement": 400,
+    "horsepower": 150,
+    "weight": 4500,
+    "acceleration": 12,
+    "model_year": 73,
+    "origin": 1
+  },
+  {
+    "cylinders": 4,
+    "displacement": 120,
+    "horsepower": 80,
+    "weight": 2500,
+    "acceleration": 15,
+    "model_year": 82,
+    "origin": 3
+  },
+  {
+    "cylinders": 6,
+    "displacement": 250,
+    "horsepower": 110,
+    "weight": 3500,
+    "acceleration": 14,
+    "model_year": 78,
+    "origin": 1
+  }
+]

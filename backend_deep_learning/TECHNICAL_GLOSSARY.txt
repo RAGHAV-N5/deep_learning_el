@@ -1,0 +1,613 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    TECHNICAL INDEX & GLOSSARY                             ║
+║           Deep Learning Fuel Consumption Prediction System                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+This document explains key technical terms and concepts used throughout the
+project. It serves as a quick reference guide.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+A
+═══════════════════════════════════════════════════════════════════════════════
+
+ACTIVATION FUNCTION
+  Definition: Non-linear function applied to neuron output
+  Examples: ReLU, sigmoid, tanh, linear
+  Purpose: Introduce non-linearity to enable complex pattern learning
+  In Project: ReLU in hidden layers, linear for regression output
+
+ADAM OPTIMIZER
+  Definition: Adaptive Moment Estimation optimizer
+  How it works: Combines momentum with adaptive learning rates
+  Advantage: Faster convergence than vanilla SGD
+  In Project: Used in all 3 models with learning_rate=0.001
+
+ADJUSTED R²
+  Definition: R² adjusted for number of features
+  Formula: 1 - (1 - R²) × (n - 1) / (n - p - 1)
+  Use: Prevents overfitting credit to additional features
+  In Project: Computed in metrics.py for MLP evaluation
+
+AUTOENCODER
+  Definition: Neural network that learns to reconstruct its input
+  Components: Encoder (compress) + Decoder (reconstruct)
+  Purpose: Unsupervised feature learning, dimensionality reduction
+  In Project: 8 → 16 → 8 architecture with denoising
+
+═══════════════════════════════════════════════════════════════════════════════
+
+B
+═══════════════════════════════════════════════════════════════════════════════
+
+BACKPROPAGATION
+  Definition: Algorithm to compute gradients by propagating errors backward
+  Process: Forward pass → Loss computation → Backward pass → Weight updates
+  Chain Rule: Gradients computed using ∂L/∂w = ∂L/∂y × ∂y/∂w
+  In Project: Implemented in all 3 models for weight optimization
+
+BATCH NORMALIZATION
+  Definition: Technique to normalize layer inputs during training
+  Benefit: Stabilizes training, enables higher learning rates
+  Parameters: Learned scale (γ) and shift (β) per layer
+  In Project: Applied after first dense layer in MLP
+
+BATCH SIZE
+  Definition: Number of samples processed in one gradient update
+  Effect: Larger batch → more stable but coarser gradients
+  Trade-off: Speed vs gradient quality
+  In Project: batch_size = 32 (balance between gradient noise & speed)
+
+BPTT (Backpropagation Through Time)
+  Definition: Backpropagation applied to recurrent networks
+  Process: Unfold RNN through time, apply backprop across timesteps
+  Challenge: Vanishing/exploding gradients over many timesteps
+  Solution: LSTM cells with gating mechanisms
+  In Project: Used in LSTM model training
+
+═══════════════════════════════════════════════════════════════════════════════
+
+C
+═══════════════════════════════════════════════════════════════════════════════
+
+CALLBACK
+  Definition: Function called during training (e.g., after each epoch)
+  Types: EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, etc.
+  Purpose: Monitor training, adjust parameters, prevent overfitting
+  In Project: EarlyStopping (patience=15) + ReduceLROnPlateau (patience=10)
+
+CELL STATE (LSTM)
+  Definition: Internal memory vector in LSTM cells
+  Function: Carries information across timesteps
+  Update: C_t = f_t * C_{t-1} + i_t * C̃_t
+  Feature: Can preserve information much longer than vanilla RNN
+
+CHAIN RULE
+  Definition: Calculus rule for derivatives of composite functions
+  Formula: d/dx f(g(x)) = f'(g(x)) × g'(x)
+  Application: Computing gradients in neural networks
+  In Project: Foundation of backpropagation algorithm
+
+CONCATENATION
+  Definition: Joining arrays/tensors along a dimension
+  In Autoencoders: Bottleneck creates information bottleneck
+
+CONVERGENCE
+  Definition: Process where algorithm approaches optimal solution
+  In Training: Loss plateaus, validation metrics stabilize
+  Indicator: No improvement in validation loss over epochs
+  In Project: Monitored by EarlyStopping callback
+
+═══════════════════════════════════════════════════════════════════════════════
+
+D
+═══════════════════════════════════════════════════════════════════════════════
+
+DIMENSIONALITY REDUCTION
+  Definition: Reducing number of features while preserving information
+  Methods: PCA, Autoencoders, Feature selection
+  Benefit: Reduce overfitting, improve computational efficiency
+  In Project: Autoencoders reduce 8 → 16 latent dimensions
+
+DISTRIBUTION (Probability)
+  Definition: Probability of outcomes
+  In EDA: Shows how values spread across range
+  Plot: Histograms showing data distribution
+  In Project: Feature distribution analysis in EDA
+
+DROPOUT
+  Definition: Regularization method that randomly deactivates neurons
+  Rate: Probability of deactivating each neuron during training
+  Effect: Reduces co-adaptation, improves generalization
+  In Project: Dropout(0.3) and Dropout(0.2) in MLP
+
+═══════════════════════════════════════════════════════════════════════════════
+
+E
+═══════════════════════════════════════════════════════════════════════════════
+
+EARLY STOPPING
+  Definition: Stop training when validation loss stops improving
+  Parameter: patience = number of epochs without improvement
+  Purpose: Prevent overfitting, save training time
+  In Project: patience=15 (stop after 15 epochs no improvement)
+
+EMBEDDING
+  Definition: Dense vector representation of categorical data
+  In Autoencoders: Latent space embeddings
+  Learned: Automatically learned during training
+
+ENCODER
+  Definition: Part of autoencoder that compresses input
+  Function: X (8D) → Latent space (16D)
+  Output: Compressed representation capturing essential features
+  In Project: Used separately for feature extraction
+
+EPOCH
+  Definition: One complete pass through entire training dataset
+  Batch: One gradient update (multiple batches per epoch)
+  In Project: 200 max epochs with early stopping
+
+EXPLODING GRADIENTS
+  Definition: Gradients become too large during backpropagation
+  Cause: Multiplying gradients over many layers/timesteps
+  Effect: Unstable training, divergent loss
+  Solution: LSTM cells, gradient clipping, normalization
+  In Project: LSTM solves this for sequence models
+
+═══════════════════════════════════════════════════════════════════════════════
+
+F
+═══════════════════════════════════════════════════════════════════════════════
+
+FEATURES
+  Definition: Input variables to machine learning model
+  In Project: cylinders, displacement, horsepower, weight, acceleration,
+             model_year, origin (7 features from 8 input dimensions)
+
+FORGET GATE (LSTM)
+  Definition: Gate controlling which information to forget from cell state
+  Equation: f_t = σ(W_f · [h_{t-1}, x_t] + b_f)
+  Range: 0 (forget completely) to 1 (remember completely)
+  Purpose: Selective memory management in LSTM
+
+FORWARD PASS
+  Definition: Computing predictions by feeding data forward through network
+  Process: Input → Layer1 → Layer2 → ... → Output
+  Result: Model's predictions for given inputs
+  Followed by: Loss computation and backward pass
+
+═══════════════════════════════════════════════════════════════════════════════
+
+G
+═══════════════════════════════════════════════════════════════════════════════
+
+GATE (LSTM)
+  Definition: Sigmoid-based components controlling information flow in LSTM
+  Types: Forget gate, Input gate, Output gate
+  Function: Multiplicative masks (0-1) controlling signal strength
+
+GAUSSIAN NOISE
+  Definition: Random noise from normal distribution N(μ, σ²)
+  In Project: N(0, 0.1) added to inputs in denoising autoencoder
+  Purpose: Forces autoencoder to learn robust features
+
+GRADIENT
+  Definition: Partial derivative showing direction of steepest increase
+  Symbol: ∇
+  In neural networks: ∂L/∂w (change in loss w.r.t. weight)
+  Update: W_new = W_old - learning_rate × gradient
+
+GRADIENT DESCENT
+  Definition: Optimization algorithm moving in negative gradient direction
+  Variants: SGD, Momentum, Adam, etc.
+  In Project: Adam optimizer implements adaptive gradient descent
+
+═══════════════════════════════════════════════════════════════════════════════
+
+H
+═══════════════════════════════════════════════════════════════════════════════
+
+HIDDEN STATE (LSTM/RNN)
+  Definition: Output of RNN/LSTM cell at each timestep
+  Symbol: h_t
+  Function: Passes information to next timestep
+  Difference from cell state: h_t = o_t × tanh(C_t)
+
+HIDDEN UNITS/NEURONS
+  Definition: Computational units in hidden layers
+  In Project: 64 → 32 → 16 neurons in MLP hidden layers
+
+HYPERPARAMETER
+  Definition: Parameter set before training (not learned during training)
+  Examples: learning_rate, batch_size, dropout_rate, epochs
+  Tuning: Process of finding optimal hyperparameter values
+  In Project: Comprehensive hyperparameter documentation
+
+═══════════════════════════════════════════════════════════════════════════════
+
+I
+═══════════════════════════════════════════════════════════════════════════════
+
+INPUT GATE (LSTM)
+  Definition: Gate controlling which new information to add to cell state
+  Equation: i_t = σ(W_i · [h_{t-1}, x_t] + b_i)
+  Range: 0 (ignore) to 1 (accept completely)
+
+IQR (Interquartile Range)
+  Definition: Difference between 75th and 25th percentiles
+  Use: Outlier detection (values > Q3 + 1.5×IQR)
+  In Project: Used in EDA outlier analysis
+
+═══════════════════════════════════════════════════════════════════════════════
+
+L
+═══════════════════════════════════════════════════════════════════════════════
+
+L2 REGULARIZATION (Weight Decay)
+  Definition: Adding penalty term λ × Σ(w²) to loss function
+  Effect: Prevents overfitting by encouraging smaller weights
+  Formula: Total Loss = MSE_Loss + λ × Σ(weights²)
+  In Project: λ = 0.001 in all models
+
+LATENT SPACE
+  Definition: Compressed representation learned by autoencoder
+  Dimension: 16 in this project (vs 8 original features)
+  Interpretation: Each latent dimension captures some data aspect
+  Visualization: PCA reduction to 2D for visualization
+
+LAYER
+  Definition: Group of neurons processing data in parallel
+  Types: Dense (fully connected), LSTM, etc.
+  Stacking: Multiple layers enable learning complex patterns
+
+LEARNING RATE
+  Definition: Hyperparameter controlling step size in gradient descent
+  Effect: Too high → divergence, Too low → slow convergence
+  In Project: Initial lr=0.001, decays to minimum 1e-6
+
+LOSS FUNCTION
+  Definition: Measures how far predictions are from true values
+  In Project: MSE (Mean Squared Error) for regression
+  Optimization: Training minimizes this loss
+
+═══════════════════════════════════════════════════════════════════════════════
+
+M
+═══════════════════════════════════════════════════════════════════════════════
+
+MAE (Mean Absolute Error)
+  Definition: Mean of absolute differences: mean(|y_true - y_pred|)
+  Robustness: More robust to outliers than MSE
+  Interpretation: Average error in same units as target (MPG)
+  In Project: Tracked as metric during training, computed in evaluation
+
+MAPE (Mean Absolute Percentage Error)
+  Definition: mean(|y_true - y_pred| / |y_true|) × 100%
+  Use: Scale-independent comparison metric
+  Interpretation: Average percentage error
+  In Project: Computed for all models
+
+MSE (Mean Squared Error)
+  Definition: Mean of squared differences: mean((y_true - y_pred)²)
+  Sensitivity: Heavily penalizes large errors
+  Use: Loss function for regression
+  In Project: Both loss function and evaluation metric
+
+MODEL
+  Definition: Complete neural network with trained weights/biases
+  Components: Layers, activation functions, parameters
+  Inference: Using model to make predictions on new data
+
+MOMENTUM (Optimization)
+  Definition: Acceleration technique using velocity in gradient descent
+  Implemented in: Adam, SGD with momentum
+  Effect: Faster convergence, smooths oscillations
+
+═══════════════════════════════════════════════════════════════════════════════
+
+N
+═══════════════════════════════════════════════════════════════════════════════
+
+NEURAL NETWORK
+  Definition: Computational model inspired by biological neurons
+  Components: Neurons, weights, biases, activation functions
+  Types: Feedforward, Recurrent, Convolutional, etc.
+  In Project: MLP, LSTM, Autoencoder architectures
+
+NEURON
+  Definition: Basic computational unit: output = activation(Σ(w×x) + b)
+  Parameters: Weights (w) and bias (b)
+  Trained: Weights/biases optimized during training
+
+NOISE (in denoising autoencoder)
+  Definition: Random perturbation added to input
+  Distribution: Gaussian (N(0, σ²))
+  In Project: σ=0.1 added during autoencoder training
+
+NORMALIZATION
+  Definition: Scaling features to similar ranges
+  Method: StandardScaler (μ=0, σ=1)
+  Benefit: Stabilizes training, improves convergence
+  In Project: Applied to all input features
+
+═══════════════════════════════════════════════════════════════════════════════
+
+O
+═══════════════════════════════════════════════════════════════════════════════
+
+OPTIMIZATION
+  Definition: Process of improving model parameters
+  Method: Gradient-based optimization (backpropagation)
+  Goal: Minimize loss function
+  In Project: Adam optimizer with learning rate decay
+
+OUTPUT GATE (LSTM)
+  Definition: Gate controlling what information to output from LSTM cell
+  Equation: o_t = σ(W_o · [h_{t-1}, x_t] + b_o)
+  Range: 0 (hide) to 1 (show everything)
+
+OVERFITTING
+  Definition: Model performs well on training data but poorly on test data
+  Cause: Model memorizes training data instead of learning patterns
+  Solutions: Dropout, regularization, early stopping, more data
+  In Project: Multiple techniques prevent overfitting
+
+═══════════════════════════════════════════════════════════════════════════════
+
+P
+═══════════════════════════════════════════════════════════════════════════════
+
+PATIENCE (Early Stopping)
+  Definition: Number of epochs to wait before stopping
+  In Project: patience=15 (stop after 15 epochs without improvement)
+
+PCA (Principal Component Analysis)
+  Definition: Dimensionality reduction via orthogonal transformations
+  Use: Visualize high-dimensional data in 2D
+  In Project: Used to visualize 16D latent space in 2D
+
+PERCEPTRON
+  Definition: Simplest neural network (single neuron)
+  Function: Multiplies inputs by weights, adds bias, applies activation
+  MLP: Multi-layer perceptron with multiple neurons/layers
+
+PREDICTION
+  Definition: Model's output for given input
+  Goal: Predict MPG (target variable)
+  Accuracy: Measured by evaluation metrics
+
+═══════════════════════════════════════════════════════════════════════════════
+
+R
+═══════════════════════════════════════════════════════════════════════════════
+
+R² SCORE (Coefficient of Determination)
+  Definition: Proportion of variance explained by model
+  Formula: R² = 1 - (SS_res / SS_tot)
+  Interpretation: 0.9 = explains 90% of variance
+  Range: -∞ to 1 (higher is better)
+
+RECONSTRUCTION ERROR
+  Definition: Loss between input and reconstructed output
+  In Autoencoders: MSE(original, reconstructed)
+  Interpretation: Lower = better compression & reconstruction
+
+RECTIFIED LINEAR UNIT (ReLU)
+  Definition: Activation function f(x) = max(0, x)
+  Property: Non-linear, allows learning complex patterns
+  Benefit: Avoids saturation, faster training
+  In Project: Used in all hidden layers
+
+RECURRENT NEURAL NETWORK (RNN)
+  Definition: Neural network with connections between neurons across time
+  Feature: Hidden state carries information across timesteps
+  Limitation: Vanishing gradient problem
+  Solution: LSTM cells
+  In Project: LSTM is advanced RNN implementation
+
+REGULARIZATION
+  Definition: Technique to prevent overfitting
+  Types: Dropout, L2, Batch Norm, Early Stopping
+  Effect: Improves generalization to unseen data
+  In Project: Multiple regularization techniques combined
+
+RESIDUAL
+  Definition: Difference between actual and predicted: y_true - y_pred
+  Analysis: Residuals should be random around zero
+  Visualization: Residual plots in evaluation
+
+RETURN SEQUENCES
+  Definition: Whether RNN returns sequence or final state only
+  True: Output shape (batch, timesteps, units)
+  False: Output shape (batch, units)
+  In Project: First LSTM has True (to feed next LSTM)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+S
+═══════════════════════════════════════════════════════════════════════════════
+
+SCALER
+  Definition: Object that normalizes features
+  Type: StandardScaler (subtract mean, divide by std)
+  Fitting: Learn mean/std from training data
+  Transform: Apply normalization to any data
+  In Project: Saved in data/scaler.pkl, loaded for predictions
+
+SEQUENCE (in LSTM)
+  Definition: Ordered series of data points
+  Window size: 10 timesteps in this project
+  Creation: Sliding window of consecutive samples
+  Purpose: Capture temporal dependencies
+
+SEQUENCING
+  Definition: Creating sequences from flat data
+  Method: Sliding window approach
+  In Project: Applied to create LSTM input (383, 10, 8)
+
+SIGMOID
+  Definition: Activation function: σ(x) = 1/(1+e^-x)
+  Range: 0 to 1 (probability-like)
+  Used in: LSTM gates, binary classification
+
+STOCHASTIC
+  Definition: Involving randomness
+  Dropout: Stochastic regularization (random neuron drops)
+  SGD: Stochastic gradient descent (random batch sampling)
+
+STANDARDIZATION
+  Definition: Scaling features to mean=0, std=1
+  Formula: x_scaled = (x - mean) / std
+  Benefit: Features on similar scales
+  In Project: Applied via StandardScaler
+
+═══════════════════════════════════════════════════════════════════════════════
+
+T
+═══════════════════════════════════════════════════════════════════════════════
+
+TANH (Hyperbolic Tangent)
+  Definition: Activation function: tanh(x) = (e^x - e^-x)/(e^x + e^-x)
+  Range: -1 to 1
+  Used in: LSTM candidate values, hidden layers
+  Property: Zero-centered (helps with convergence)
+
+TARGET VARIABLE
+  Definition: Variable being predicted
+  In Project: MPG (miles per gallon fuel consumption)
+  Range: 9-47 in dataset
+
+TARGET VALUE
+  Definition: True/actual value for given sample
+  Symbol: y_true
+  Prediction comparison: Compare with y_pred
+
+TENSOR
+  Definition: Multi-dimensional array
+  Dimensions: 1D=vector, 2D=matrix, 3D+=tensor
+  In LSTM: Input tensors have shape (batch, timesteps, features)
+
+TEST DATA
+  Definition: Data used to evaluate final model performance
+  Split: 20% of total data
+  Importance: Unseen data measures generalization
+  In Project: Held out from training for fair evaluation
+
+TIMESTEP
+  Definition: Single point in time in sequence
+  Window: 10 timesteps in LSTM sequences
+  Processing: LSTM processes one timestep at a time
+
+TRAIN DATA
+  Definition: Data used to train/fit model
+  Split: 80% of total data
+  Use: Learn weights/parameters of model
+  In Project: Used in all 3 training scripts
+
+TRAINING
+  Definition: Process of optimizing model parameters
+  Process: Forward → Backward → Update weights
+  Monitoring: Track loss and metrics over epochs
+  In Project: Implemented in training/*.py scripts
+
+═══════════════════════════════════════════════════════════════════════════════
+
+U
+═══════════════════════════════════════════════════════════════════════════════
+
+UNDERFITTING
+  Definition: Model too simple to capture data patterns
+  Symptom: High loss on both training and test data
+  Solution: More complex model, more training, better features
+  Opposite of: Overfitting
+
+═══════════════════════════════════════════════════════════════════════════════
+
+V
+═══════════════════════════════════════════════════════════════════════════════
+
+VALIDATION DATA
+  Definition: Data used to tune hyperparameters and prevent overfitting
+  In Project: Test set used as validation (20% of data)
+  Monitoring: Early stopping monitors validation loss
+
+VANISHING GRADIENTS
+  Definition: Gradients become too small during backpropagation
+  Cause: Multiplying gradients < 1 over many layers/timesteps
+  Effect: No weight updates, stalled learning
+  Solution: LSTM cells with multiplicative gates
+  In Project: LSTM solves this problem for sequences
+
+VISUALIZATION
+  Definition: Graphical representation of data/results
+  Types: Histograms, scatter plots, heatmaps, curves
+  Purpose: Understand data and model behavior
+  In Project: 30+ visualizations automatically generated
+
+═══════════════════════════════════════════════════════════════════════════════
+
+W
+═══════════════════════════════════════════════════════════════════════════════
+
+WEIGHT
+  Definition: Learnable parameter in neural network
+  Update: W_new = W_old - lr × ∂L/∂W
+  Initialization: Random small values
+  In Project: Optimized via backpropagation
+
+WINDOW (in LSTM)
+  Definition: Fixed-size sliding window of samples
+  Size: 10 samples in this project
+  Purpose: Create sequences for LSTM
+  Creation: Slide by 1 sample each iteration
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Useful Symbols:
+═══════════════════════════════════════════════════════════════════════════════
+
+∂ (partial derivative)     → Change with respect to one variable
+∇ (gradient)              → Vector of all partial derivatives
+σ (sigma, sigmoid)        → 1/(1+e^-x) activation function
+σ (sigma, standard dev)   → Measure of data spread
+λ (lambda)                → Regularization coefficient
+← (assignment)            → Parameter update
+→ (function arrow)        → Maps input to output
+≈ (approximately equals)  → Close to but not exactly equal
+∑ (summation)            → Sum over all elements
+μ (mu)                   → Mean/average value
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Key Project Acronyms:
+═══════════════════════════════════════════════════════════════════════════════
+
+MLP  → Multilayer Perceptron
+LSTM → Long Short-Term Memory
+RNN  → Recurrent Neural Network
+BPTT → Backpropagation Through Time
+MSE  → Mean Squared Error
+RMS  → Root Mean Square / RMSE
+MAE  → Mean Absolute Error
+MAPE → Mean Absolute Percentage Error
+PCA  → Principal Component Analysis
+IQR  → Interquartile Range
+API  → Application Programming Interface
+CSV  → Comma-Separated Values
+UCI  → University of California, Irvine
+SGD  → Stochastic Gradient Descent
+DPI  → Dots Per Inch (image quality)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+This glossary provides a comprehensive reference for all technical terms used
+in the Deep Learning Fuel Consumption Prediction project.
+
+For more detailed explanations, refer to:
+- README.md (conceptual explanations)
+- Jupyter notebooks (interactive demonstrations)
+- Code docstrings (implementation details)
+- QUICK_START.txt (practical usage)
+
+═══════════════════════════════════════════════════════════════════════════════

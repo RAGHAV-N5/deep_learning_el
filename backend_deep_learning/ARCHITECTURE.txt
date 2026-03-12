@@ -1,0 +1,733 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                  SYSTEM ARCHITECTURE & DATA FLOW                          ║
+║           Deep Learning Fuel Consumption Prediction System                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+This document describes how all components of the system work together.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+HIGH-LEVEL SYSTEM ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           USER INTERACTION                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│  • Command-line: python training/train_*.py                            │
+│  • Jupyter: jupyter notebook notebooks/                                │
+│  • REST API: curl/requests to http://localhost:8000                   │
+└──────────────────────────────┬──────────────────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────────────┐
+│                        CORE SYSTEM LAYER                              │
+│                                                                        │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │ DATA PIPELINE (utils/data_loader.py)                         │  │
+│  │  • Download Auto MPG from UCI repository                     │  │
+│  │  • Clean missing values (horsepower '?' → drop)             │  │
+│  │  • Normalize features via StandardScaler                     │  │
+│  │  • Create train/test split (80/20)                          │  │
+│  │  • Save scaler for inference (data/scaler.pkl)             │  │
+│  │  • Create LSTM sequences (sliding window)                   │  │
+│  └────────────────────────────────────────────────────────────────┘
+│                                  │
+│  ┌─────────────────────────────│──────────────────────────────┐
+│  │                             │                              │
+│  ▼                             ▼                              ▼
+│
+│  ┌─────────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│  │  MLP MODEL          │ │  LSTM MODEL      │ │  AUTOENCODER    │
+│  │ (Dense layers)      │ │ (Sequence model) │ │ (Unsupervised)  │
+│  │                     │ │                  │ │                  │
+│  │ 8→64→32→16→1        │ │ Seq→64→32→1      │ │ 8→64→32→16      │
+│  │                     │ │ w/ LSTM cells    │ │ ↓                │
+│  │ training/          │ │                  │ │ 16→32→64→8       │
+│  │ train_mlp.py        │ │ training/       │ │                  │
+│  │                     │ │ train_lstm.py    │ │ + MLP on latent │
+│  │ models/             │ │                  │ │                  │
+│  │ mlp_model.h5        │ │ models/         │ │ models/         │
+│  │ mlp_scaler.pkl      │ │ lstm_model.h5   │ │ encoder.h5       │
+│  │                     │ │ lstm_scaler.pkl │ │ decoder.h5       │
+│  │ Loss: MSE           │ │                  │ │ ae_mlp.h5       │
+│  │ Optimizer: Adam     │ │ Loss: MSE        │ │ ae_scaler.pkl    │
+│  │ Accuracy: ~0.85 R² │ │ Accuracy: ~0.88  │ │ Accuracy: ~0.82  │
+│  └─────────────────────┘ │ R²               │ │ Latent: 16D     │
+│                          │                  │ │                  │
+│                          │ Better for       │ │ Feature learning │
+│                          │ sequences!       │ │ + prediction     │
+│                          └──────────────────┘ └──────────────────┘
+│
+│  ┌───────────────────────────────────────────────────────────────┐
+│  │ EVALUATION & COMPARISON (utils/metrics.py)                  │
+│  │  • Compute 8+ metrics: MSE, RMSE, MAE, R², MAPE, etc.      │
+│  │  • Cross-model comparison                                   │
+│  │  • Select best performing model                             │
+│  └───────────────────────────────────────────────────────────────┘
+│
+│  ┌───────────────────────────────────────────────────────────────┐
+│  │ VISUALIZATION (utils/plotting.py)                            │
+│  │  • 30+ plots generated automatically                         │
+│  │  • Training curves, predictions, residuals, etc.            │
+│  │  • Model comparison charts                                  │
+│  │  → images/*.png (5 directories, 30+ images)               │
+│  └───────────────────────────────────────────────────────────────┘
+│
+└──────────────────────────────────────────────────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────────────┐
+│                        DEPLOYMENT LAYER                              │
+│                                                                        │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │  app.py (FastAPI REST API)                                   │  │
+│  │                                                               │  │
+│  │  Endpoints:                                                  │  │
+│  │  • GET  /              (health check)                       │  │
+│  │  • GET  /health        (detailed health)                    │  │
+│  │  • POST /predict       (single prediction)                  │  │
+│  │  • POST /predict-batch (batch up to 1000)                  │  │
+│  │  • GET  /api/info      (API information)                    │  │
+│  │                                                               │  │
+│  │  Features:                                                   │  │
+│  │  • Auto-scaling with loaded scaler                          │  │
+│  │  • Confidence scoring for predictions                        │  │
+│  │  • Input validation with Pydantic                           │  │
+│  │  • Auto-generated Swagger docs (/docs)                      │  │
+│  │  • Runs on http://localhost:8000                            │  │
+│  │                                                               │  │
+│  └────────────────────────────────────────────────────────────────┘
+│
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │  Jupyter Notebooks (Interactive Research & Learning)         │  │
+│  │                                                               │  │
+│  │  01_EDA.ipynb                                               │  │
+│  │    → Data exploration and analysis                           │  │
+│  │                                                               │  │
+│  │  02_MLP_Model.ipynb                                          │  │
+│  │    → MLP concepts and training                               │  │
+│  │                                                               │  │
+│  │  03_LSTM_Model.ipynb                                         │  │
+│  │    → LSTM concepts and sequential modeling                   │  │
+│  │                                                               │  │
+│  │  04_Autoencoder.ipynb                                        │  │
+│  │    → Unsupervised learning and feature extraction            │  │
+│  │                                                               │  │
+│  │  05_Model_Comparison.ipynb                                   │  │
+│  │    → Train all 3 models, compare results                     │  │
+│  │                                                               │  │
+│  └────────────────────────────────────────────────────────────────┘
+│
+└──────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DATA FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════
+
+TRAINING DATA FLOW:
+───────────────────
+
+  UCI Auto MPG Dataset
+       (online)
+         │
+         │ download_dataset()
+         │
+         ▼
+  data/final_data.csv
+       (398 samples, 8 features)
+         │
+         │ clean_dataset()
+         │
+         ▼
+  Cleaned Data
+  (392 samples, 7 features + target)
+         │
+         ├─────────────────────────────┬─────────────────────────────┐
+         │                             │                             │
+         │ normalize                   │ create_lstm_sequences()     │
+         │ (StandardScaler)            │ (window_size=10)            │
+         │                             │                             │
+         ▼                             ▼                             ▼
+    MLP Training                   LSTM Training              Autoencoder Training
+  ┌─────────────────┐           ┌──────────────────┐       ┌────────────────────┐
+  │ (383, 7)        │           │ (383, 10, 7)     │       │ (383, 7)           │
+  │ ↓               │           │ Timestep=10      │       │ ↓                  │
+  │ Dense(64)       │           │ ↓                │       │ Add Gaussian Noise │
+  │ Batch Norm      │           │ LSTM(64)return_seq
+  │ Dropout(0.3)    │           │ Dropout(0.2)     │       │ Encode to 16D      │
+  │ Dense(32)       │           │ LSTM(32)         │       │ Decode to 7D       │
+  │ Dropout(0.2)    │           │ Dropout(0.2)     │       │ Reconstruct Loss   │
+  │ Dense(16)       │           │ Dense(16)        │       │ ↓                  │
+  │ Dense(1)        │           │ Dense(1)         │       │ Extract 16D Latent │
+  │ ↓               │           │ ↓                │       │ ↓                  │
+  │ Output: MPG     │           │ Output: MPG      │       │ MLP on Latent      │
+  │                 │           │                  │       │ Predict MPG        │
+  └─────────────────┘           └──────────────────┘       └────────────────────┘
+         │                             │                             │
+         │ MSE Loss                    │ MSE Loss                    │ 2-phase Loss
+         │ Adam Optimizer              │ Adam Optimizer              │ Adam Optimizer
+         │ Early Stopping              │ Early Stopping              │ Early Stopping
+         │ ReduceLROnPlateau           │ ReduceLROnPlateau           │ ReduceLROnPlateau
+         │                             │                             │
+         ▼                             ▼                             ▼
+   models/                        models/                      models/
+   mlp_model.h5                 lstm_model.h5                encoder.h5
+   mlp_scaler.pkl               lstm_scaler.pkl              decoder.h5
+                                                              ae_mlp.h5
+                                                              ae_scaler.pkl
+
+
+EVALUATION FLOW:
+────────────────
+
+  Trained Models
+  (mlp, lstm, ae)
+       │
+       │ evaluate_*_model()
+       │ (compute predictions)
+       │
+       ▼
+  Predictions + Actuals
+       │
+       │ compute_regression_metrics()
+       │
+       ▼
+  8+ Metrics: MSE, RMSE, MAE, R², Adjusted R², MAPE, Explained Variance,
+  Median Absolute Error, Residuals, Confidence Scores
+       │
+       │ print_metrics()
+       │ compare_models_metrics()
+       │ calculate_best_model()
+       │
+       ▼
+  Console Output + CSV Reports
+       │
+       │ plot_*()
+       │
+       ▼
+  images/
+    ├── mlp_training_history.png
+    ├── mlp_predictions_vs_actual.png
+    ├── mlp_residuals.png
+    ├── mlp_error_distribution.png
+    │
+    ├── lstm_training_history.png
+    ├── lstm_predictions_vs_actual.png
+    ├── lstm_residuals.png
+    │
+    ├── autoencoder_reconstruction_loss.png
+    ├── autoencoder_latent_space_pca.png
+    │
+    ├── mlp_vs_lstm_vs_ae_rmse.png
+    ├── metrics_comparison_heatmap.png
+    ├── training_time_comparison.png
+    └── ... (30+ visualizations)
+
+
+INFERENCE FLOW (Prediction):
+────────────────────────────
+
+  New Vehicle Data
+  {cylinders, displacement, horsepower, weight, acceleration, model_year, origin}
+       │
+       │ API Request: POST /predict
+       │ (or /predict-batch)
+       │
+       ▼
+  app.py
+  load_model_and_scaler()
+       │
+       │ validate_and_prepare_features()
+       │ (1) Validate features (check types, ranges)
+       │ (2) Scale features (using saved scaler)
+       │
+       ▼
+  Normalized Features (7D vector)
+       │
+       ├─────────────────────┬──────────────────┬──────────────────┐
+       │                     │                  │                  │
+       │ MLP Model           │ LSTM Model       │ Autoencoder      │
+       │ (4 layers)          │ (2 LSTM + Dense) │ (Encoder + MLP)  │
+       │ ↓                   │ ↓                │ ↓                │
+       │ Prediction: y_mlp   │ Prediction:      │ Prediction:      │
+       │                     │ y_lstm           │ y_ae             │
+       │                     │                  │                  │
+       └─────────────────────┴──────────────────┴──────────────────┘
+         │
+         │ Ensemble (Optional)
+         │ y_ensemble = (y_mlp + y_lstm + y_ae) / 3
+         │
+         ▼
+  get_prediction_confidence()
+  (score based on model agreement)
+       │
+       ▼
+  PredictionResponse
+  {
+    prediction: float,
+    confidence: float,
+    model_used: string,
+    timestamp: datetime
+  }
+       │
+       │ JSON Response
+       │
+       ▼
+  User / Client
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FOLDER STRUCTURE & DATA FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+backend_deep_learning/
+│
+├── data/
+│   ├── final_data.csv          (preprocessed data: 392 × 8)
+│   ├── scaler.pkl              (StandardScaler for normalization)
+│   └── [LSTM sequences]         (generated during training)
+│
+├── models/
+│   ├── mlp_model.h5            (trained MLP weights)
+│   ├── mlp_scaler.pkl          (MLP input scaler)
+│   ├── lstm_model.h5           (trained LSTM weights)
+│   ├── lstm_scaler.pkl         (LSTM input scaler)
+│   ├── encoder.h5              (Autoencoder encoder)
+│   ├── decoder.h5              (Autoencoder decoder)
+│   ├── ae_mlp.h5               (MLP on latent space)
+│   └── ae_scaler.pkl           (Autoencoder input scaler)
+│
+├── training/
+│   ├── train_mlp.py            (MLP training script)
+│   ├── train_lstm.py           (LSTM training script)
+│   └── train_autoencoder.py    (Autoencoder training script)
+│
+├── utils/
+│   ├── __init__.py             (package initialization)
+│   ├── data_loader.py          (data pipeline)
+│   ├── metrics.py              (evaluation metrics)
+│   ├── plotting.py             (visualization)
+│   └── [computed features]     (latent features, sequences)
+│
+├── notebooks/
+│   ├── 01_EDA.ipynb            (exploratory analysis)
+│   ├── 02_MLP_Model.ipynb      (MLP training & concepts)
+│   ├── 03_LSTM_Model.ipynb     (LSTM training & concepts)
+│   ├── 04_Autoencoder.ipynb    (Autoencoder training & concepts)
+│   └── 05_Model_Comparison.ipynb (compare all models)
+│
+├── images/
+│   ├── mlp/                    (MLP visualizations)
+│   ├── lstm/                   (LSTM visualizations)
+│   ├── autoencoder/            (Autoencoder visualizations)
+│   ├── comparison/             (cross-model comparisons)
+│   └── evaluation/             (additional analysis plots)
+│
+├── app.py                      (FastAPI REST API)
+├── requirements.txt            (dependencies: 12 packages)
+├── README.md                   (comprehensive documentation)
+├── QUICK_START.txt             (quick reference guide)
+├── PROJECT_SUMMARY.txt         (completion checklist)
+├── TECHNICAL_GLOSSARY.txt      (term definitions)
+└── ARCHITECTURE.txt            (this file)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TRAINING WORKFLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: DATA PREPARATION (AutoMPGDataLoader)
+────────────────────────────────────────────
+Input:  {none} → Download from UCI repository
+  │
+  ├─ download_dataset()
+  │    • Get from: https://archive.ics.uci.edu/dataset/9/auto+mpg
+  │    • Resulting: 398 samples
+  │
+  ├─ clean_dataset()
+  │    • Remove 6 rows with missing horsepower
+  │    • Select 7 features + target (MPG)
+  │    • Result: 392 samples
+  │
+  └─ load_and_preprocess()
+       • Train/test split: 80/20 (313 train, 79 test)
+       • Standardize: μ=0, σ=1
+       • Save scaler.pkl
+Output: X_train(313,7), y_train(313,), X_test(79,7), y_test(79,)
+
+
+STEP 2: MLP TRAINING (train_mlp.py)
+──────────────────────────────────────
+Input:  Prepared data from Step 1
+  │
+  ├─ build_mlp_model()
+  │    • Dense(64) → ReLU
+  │    • BatchNormalization
+  │    • Dropout(0.3)
+  │    • Dense(32) → ReLU
+  │    • Dropout(0.2)
+  │    • Dense(16) → ReLU
+  │    • Dense(1) → Linear (regression)
+  │    • Compile with MSE + Adam
+  │
+  ├─ train_mlp_model()
+  │    • Batch size: 32
+  │    • Epochs: 200 (with early stopping)
+  │    • Callbacks:
+  │      - EarlyStopping(patience=15)
+  │      - ReduceLROnPlateau(patience=10)
+  │    • Time: ~2-3 minutes on CPU
+  │
+  ├─ evaluate_mlp_model()
+  │    • Get predictions
+  │    • Compute metrics (8+)
+  │    • Save visualizations
+  │
+  └─ save_mlp_model()
+       • Save model.h5
+       • Save scaler.pkl
+Output: models/mlp_model.h5, models/mlp_scaler.pkl
+        Performance: RMSE ~3.5, R² ~0.85
+
+
+STEP 3: LSTM TRAINING (train_lstm.py)
+───────────────────────────────────────
+Input:  Prepared data from Step 1
+  │
+  ├─ create_lstm_sequences()
+  │    • Sliding window size: 10 timesteps
+  │    • Input shape: (383, 10, 7) [sequences, timesteps, features]
+  │    • Output: Same dimensions
+  │
+  ├─ build_lstm_model()
+  │    • LSTM(64, return_sequences=True) → ReLU
+  │    • Dropout(0.2)
+  │    • LSTM(32) → ReLU
+  │    • Dropout(0.2)
+  │    • Dense(16) → ReLU
+  │    • Dense(1) → Linear
+  │    • Compile with MSE + Adam
+  │
+  ├─ train_lstm_model()
+  │    • Batch size: 32
+  │    • Epochs: 200 (with early stopping)
+  │    • Callbacks: EarlyStopping, ReduceLROnPlateau
+  │    • Time: ~2-3 minutes on CPU
+  │    • BPTT handles gradient flow through sequences
+  │
+  ├─ evaluate_lstm_model()
+  │    • Get predictions
+  │    • Compute metrics
+  │    • Save visualizations
+  │
+  └─ save_lstm_model()
+       • Save model.h5
+       • Save scaler.pkl
+Output: models/lstm_model.h5, models/lstm_scaler.pkl
+        Performance: RMSE ~3.2, R² ~0.88
+
+
+STEP 4: AUTOENCODER TRAINING (train_autoencoder.py)
+──────────────────────────────────────────────────────
+Input:  Prepared data from Step 1
+
+PHASE A: Unsupervised Training
+  │
+  ├─ add_gaussian_noise()
+  │    • Add N(0, 0.1) to training data
+  │    • Create corrupted version of inputs
+  │
+  ├─ build_autoencoder_model()
+  │    Encoder:  7 → 64 → 32 → 16 (bottleneck)
+  │    Decoder: 16 → 32 → 64 →  7 (reconstruct)
+  │    Denoising: Learn to reconstruct clean from noisy
+  │
+  ├─ train_autoencoder()
+  │    • Input: noisy data
+  │    • Target: clean data
+  │    • Loss: MSE(reconstructed, original)
+  │    • Epochs: 200, Batch: 32
+  │    • Time: ~2-3 minutes
+  │
+  └─ extract_latent_features()
+       • Use encoder to get 16D latent representations
+       • Dimensionality reduction: 7 → 16D ✗ (wait, 7 → compressed to latent)
+
+PHASE B: Supervised Training on Latent Space
+  │
+  ├─ build_mlp_on_latent()
+  │    • Input: 16D latent features
+  │    • Dense(32) → Dense(16) → Dense(1)
+  │
+  ├─ train_mlp_on_latent()
+  │    • Train MLP on latent representations
+  │    • Predict MPG from learned features
+  │    • Epochs: 200, Early stopping
+  │
+  ├─ evaluate_models()
+  │    • Evaluate both autoencoder + MLP
+  │    • Compute metrics
+  │
+  └─ save_models()
+       • Save encoder.h5
+       • Save decoder.h5
+       • Save ae_mlp.h5
+       • Save scaler.pkl
+Output: encoder.h5, decoder.h5, ae_mlp.h5, ae_scaler.pkl
+        Performance: RMSE ~3.8, R² ~0.82
+
+
+STEP 5: EVALUATION & COMPARISON
+─────────────────────────────────
+Input:  All 3 trained models
+  │
+  ├─ Compute Metrics (8+)
+  │    • MSE, RMSE, MAE, R², Adjusted R²
+  │    • MAPE, Explained Variance, Median Absolute Error
+  │    • Residual statistics
+  │
+  ├─ Generate Visualizations
+  │    • Training curves (loss, MAE)
+  │    • Prediction scatter plots
+  │    • Residual analysis
+  │    • Error distributions
+  │    • Latent space PCA
+  │    • Model comparison charts
+  │    • Heatmaps
+  │    • 30+ total visualizations
+  │
+  └─ Select Best Model
+       • LSTM wins (best RMSE & R²)
+       • MLP second
+       • Autoencoder third (but good for features)
+Output: Metrics reports, 30+ images, rankings
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+INFERENCE ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+The API (app.py) can use any trained model for live predictions:
+
+┌─────────────────────────────────────────────────┐
+│  FastAPI Server (http://localhost:8000)        │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Startup Events:                                │
+│  • Load best model (e.g., lstm_model.h5)       │
+│  • Load corresponding scaler.pkl               │
+│  • Initialize prediction cache                 │
+│                                                 │
+│  Request Handling:                              │
+│  1. Validate input features (type, range)      │
+│  2. Scale features using loaded scaler         │
+│  3. Get prediction from model                  │
+│  4. Compute confidence score                   │
+│  5. Return response with metadata              │
+│                                                 │
+│  Endpoints:                                     │
+│  • GET  / → Health check                       │
+│  • GET  /health → Detailed health              │
+│  • POST /predict → Single prediction           │
+│  • POST /predict-batch → Batch (up to 1000)   │
+│  • GET  /api/info → API information            │
+│                                                 │
+│  Features:                                      │
+│  • Automatic Swagger documentation             │
+│  • ReDoc interactive docs                      │
+│  • Error handling & validation                 │
+│  • Timestamp tracking                          │
+│  • Confidence scoring                          │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMPONENT RELATIONSHIPS
+═══════════════════════════════════════════════════════════════════════════════
+
+data_loader.py
+│
+├─ Provides: AutoMPGDataLoader class
+├─ Used by: All 3 training scripts
+├─ Outputs: data/final_data.csv, data/scaler.pkl
+└─ Methods: download, clean, preprocess, create_lstm_sequences
+
+training/*.py (3 scripts)
+│
+├─ train_mlp.py
+│   ├─ Imports: data_loader, metrics, plotting
+│   ├─ Trains: MLP model
+│   └─ Outputs: models/mlp_*.h5, images/mlp/*.png
+│
+├─ train_lstm.py
+│   ├─ Imports: data_loader, metrics, plotting
+│   ├─ Trains: LSTM model
+│   └─ Outputs: models/lstm_*.h5, images/lstm/*.png
+│
+├─ train_autoencoder.py
+│   ├─ Imports: data_loader, metrics, plotting
+│   ├─ Trains: Encoder + Decoder + MLP
+│   └─ Outputs: models/ae_*.h5, images/autoencoder/*.png
+│
+└─ Collectively used by: 05_Model_Comparison.ipynb
+
+metrics.py
+│
+├─ Provides: compute_regression_metrics(), print_metrics(), etc.
+├─ Used by: All training scripts, notebooks
+└─ Computed Metrics: 8+ regression evaluation metrics
+
+plotting.py
+│
+├─ Provides: 9+ plotting functions
+├─ Used by: All training scripts
+└─ Outputs: 30+ visualizations in images/*/
+
+notebooks/ (5 interactive learning documents)
+│
+├─ 01_EDA.ipynb
+│   └─ Explores data, distributions, correlations
+│
+├─ 02_MLP_Model.ipynb
+│   └─ Trains MLP with `train_mlp_main()`
+│
+├─ 03_LSTM_Model.ipynb
+│   └─ Trains LSTM with `train_lstm_main()`
+│
+├─ 04_Autoencoder.ipynb
+│   └─ Trains autoencoder with `train_ae_main()`
+│
+└─ 05_Model_Comparison.ipynb
+    └─ Trains all 3, compares, generates reports
+
+app.py
+│
+├─ Imports: All trained models
+├─ Provides: FastAPI REST API with 5 endpoints
+├─ Uses: Scalers for prediction preprocessing
+└─ Output: HTTP JSON responses
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TIMELINE: FROM DATA → DEPLOYMENT
+═══════════════════════════════════════════════════════════════════════════════
+
+T=0       Data download and cleaning starts
+T=1min    Data preprocessing complete
+T=1-4min  MLP training (200 epochs)
+T=4-7min  LSTM training (200 epochs)
+T=7-10min Autoencoder training (200 epochs first phase)
+T=10-13min MLP training on latent space (200 epochs second phase)
+T=13-15min Evaluation and visualization
+T=15min   All models trained, visualizations generated
+T=15-20min Jupyter notebooks ready for exploration
+T=20min   API ready for deployment
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY DESIGN PATTERNS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SEPARATION OF CONCERNS
+   • Utils: Data, metrics, plotting (reusable)
+   • Training: Individual scripts per model
+   • API: Separate from training
+   • Notebooks: Research and exploration
+
+2. DATA PIPELINE
+   • Single AutoMPGDataLoader class handles all data
+   • Consistent preprocessing across models
+   • Saved scalers for inference
+
+3. MODULARITY
+   • Can train individual models or all together
+   • Can use models independently or in ensemble
+   • Easy to add new models or evaluation functions
+
+4. DOCUMENTATION
+   • Docstrings in all code
+   • Jupyter notebooks for explanations
+   • Technical glossary for terms
+   • README for complete overview
+   • Architecture diagram (this file)
+
+5. REPRODUCIBILITY
+   • Pinned dependency versions
+   • Fixed random seeds (where applicable)
+   • Consistent preprocessing pipeline
+   • Saved models and scalers
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DEPENDENCY GRAPH
+═══════════════════════════════════════════════════════════════════════════════
+
+(Shows what imports what)
+
+TensorFlow 2.13.0
+├─ Used by: training/*.py, app.py
+├─ Provides: Keras API
+└─ Dependencies: numpy, scipy
+
+NumPy 1.24.3
+├─ Used by: data_loader.py, metrics.py, plotting.py
+└─ Core: Array operations
+
+Pandas 1.5.3
+├─ Used by: data_loader.py, EDA notebook
+└─ Core: Data manipulation
+
+Scikit-learn 1.3.0
+├─ Used by: data_loader.py (StandardScaler)
+├─ Used by: metrics.py (metrics computation)
+└─ Core: ML utilities
+
+Matplotlib 3.7.2
+├─ Used by: plotting.py
+└─ Core: Visualization
+
+Seaborn 0.12.2
+├─ Used by: plotting.py
+├─ Used by: 01_EDA.ipynb
+└─ Core: Statistical visualization
+
+FastAPI 0.103.1
+├─ Used by: app.py
+└─ Provides: REST API framework
+
+Uvicorn 0.23.2
+├─ Used by: app.py (ASGI server)
+└─ Runs: FastAPI applications
+
+Joblib 1.3.2
+├─ Used by: data_loader.py (save/load scalers)
+└─ Core: Model persistence
+
+Scipy 1.11.1
+├─ Dependency of: sklearn, matplotlib
+└─ Core: Scientific computing
+
+IPython / Jupyter
+├─ Used by: notebooks/
+└─ Core: Interactive computing
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+This architecture document provides a complete understanding of how all
+system components interact, from raw data through training to deployment.
+
+For more details:
+• README.md - High-level project overview
+• QUICK_START.txt - Usage instructions
+• TECHNICAL_GLOSSARY.txt - Term definitions
+• Code docstrings - Implementation details
+
+═══════════════════════════════════════════════════════════════════════════════

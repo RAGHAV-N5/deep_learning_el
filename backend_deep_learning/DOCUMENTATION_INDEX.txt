@@ -1,0 +1,611 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   DOCUMENTATION INDEX & NAVIGATION GUIDE                   ║
+║           Deep Learning Fuel Consumption Prediction System                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+This file helps you find the right documentation for your needs.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK ANSWERS - FIND WHAT YOU NEED IN 30 SECONDS
+═══════════════════════════════════════════════════════════════════════════════
+
+I WANT TO...                              → READ THIS FILE
+─────────────────────────────────────────────────────────────────────────────
+Get started immediately                    VIEW QUICK_START.txt
+Understand the big picture                 READ README.md (Section: Overview)
+See training expected output               READ TRAINING_GUIDE.txt
+Understand system architecture             READ ARCHITECTURE.txt
+Learn technical concepts                   READ TECHNICAL_GLOSSARY.txt
+Check project completion status            READ PROJECT_SUMMARY.txt
+Understand a specific code function        CHECK code docstrings
+Learn interactively with Jupyter           OPEN notebooks/01_EDA.ipynb
+Use the API                                READ README.md (Section: API Usage)
+Deploy to production                       READ README.md (Section: Deployment)
+Debug a problem                            READ QUICK_START.txt (Troubleshooting)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTATION ROADMAP BY USER TYPE
+═══════════════════════════════════════════════════════════════════════════════
+
+IF YOU'RE A BEGINNER
+────────────────────
+
+1. Start here: QUICK_START.txt
+   ✓ Understand project structure
+   ✓ Install dependencies
+   ✓ Run first training script
+
+2. Then read: README.md
+   ✓ Learn what each model does
+   ✓ Understand features used
+   ✓ See example results
+
+3. Explore: notebooks/01_EDA.ipynb
+   ✓ Visual data exploration
+   ✓ Understanding the data
+
+4. Reference: TECHNICAL_GLOSSARY.txt
+   ✓ Look up unfamiliar terms
+   ✓ Understand formulas
+
+5. Advanced: Read code docstrings
+   ✓ Understand implementation details
+
+
+IF YOU'RE A DEVELOPER
+─────────────────────
+
+1. Start here: ARCHITECTURE.txt
+   ✓ Understand system design
+   ✓ See data flow diagrams
+   ✓ Component relationships
+
+2. Then read: training/*.py code files
+   ✓ Understand training logic
+   ✓ See hyperparameters
+   ✓ Review evaluation metrics
+
+3. Modify: Any file according to your needs
+   ✓ Change hyperparameters in training/*.py
+   ✓ Add new models in training/ folder
+   ✓ Extend API in app.py
+
+4. Reference: Code docstrings and TECHNICAL_GLOSSARY.txt
+
+
+IF YOU'RE A RESEARCHER
+──────────────────────
+
+1. Start here: README.md
+   ✓ Understand models (MLP, LSTM, Autoencoder)
+   ✓ See mathematical explanations
+   ✓ Review evaluation metrics
+
+2. Then explore: notebooks/ (all 5)
+   ✓ Interactive model training
+   ✓ Conceptual explanations
+   ✓ Model comparison (notebook 5)
+
+3. Analyze: images/ directory
+   ✓ 30+ visualization plots
+   ✓ Training curves, predictions, residuals
+   ✓ Model comparisons
+
+4. References: TECHNICAL_GLOSSARY.txt and code comments
+
+
+IF YOU'RE DEPLOYING TO PRODUCTION
+──────────────────────────────────
+
+1. Start here: README.md
+   ✓ Deployment section
+   ✓ API documentation
+   ✓ Installation instructions
+
+2. Then read: TRAINING_GUIDE.txt
+   ✓ How to train models
+   ✓ Expected performance metrics
+   ✓ Quality checks
+
+3. Configure: app.py
+   ✓ Choose which model to load
+   ✓ Adjust port/host settings
+   ✓ Add authentication if needed
+
+4. Test: API endpoints
+   ✓ http://localhost:8000/docs
+   ✓ Try example requests
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTATION FILES - WHAT EACH CONTAINS
+═══════════════════════════════════════════════════════════════════════════════
+
+File: README.md
+────────────────
+Size: ~600 lines
+Time to read: 20-30 minutes
+Purpose: Comprehensive project overview and reference
+
+Contains:
+• Project description and motivation
+• Folder structure explanation
+• Installation instructions
+• Dataset description (8 features, 392 samples)
+• Complete model architectures with diagrams
+• Mathematical explanations (backprop, LSTM gates, autoencoders)
+• Evaluation metrics with formulas
+• Hyperparameter documentation
+• API usage examples (Python and cURL)
+• Results and performance discussion
+• Model selection guide
+• Extension and development guidance
+• References and further reading
+
+Best for: Understanding the complete project
+Read when: First time learning about system
+
+
+File: QUICK_START.txt
+──────────────────────
+Size: ~250 lines
+Time to read: 5-10 minutes
+Purpose: Fast recipe-style instructions
+
+Contains:
+• Installation command (pip install)
+• Training scripts execution (5 commands)
+• What files get created after training
+• Expected console output examples
+• Jupyter notebook quick links
+• API usage examples (single and batch)
+• Project structure overview
+• Troubleshooting FAQ
+• What to do next
+• Resource links
+
+Best for: Getting up and running quickly
+Read when: You want to start immediately
+
+
+File: PROJECT_SUMMARY.txt
+──────────────────────────
+Size: ~400 lines
+Time to read: 10-15 minutes
+Purpose: Verify project completion and get overview
+
+Contains:
+• Complete project checklist (21+ deliverables)
+• Verification of all files created
+• Academic curriculum coverage
+• Technical features checklist
+• File statistics and counts
+• Expected outputs after training
+• Learning outcomes covered
+• Model performance metrics
+• Technology stack summary
+• Getting started steps
+• Project highlights
+
+Best for: Understanding what was built
+Read when: Need confirmation all pieces are complete
+
+
+File: TECHNICAL_GLOSSARY.txt
+──────────────────────────────
+Size: ~500 lines
+Time to read: 5-10 minutes (reference only)
+Purpose: Understand technical terminology
+
+Contains:
+• 100+ technical terms alphabetically organized
+• Clear definitions for each term
+• Mathematical formulas where applicable
+• Examples and context from the project
+• Usage in the system
+• Related concepts
+• Key acronyms used throughout project
+
+Best for: Looking up unfamiliar terms
+Read when: Encountering vocabulary you don't understand
+
+
+File: ARCHITECTURE.txt
+──────────────────────
+Size: ~700 lines
+Time to read: 20-30 minutes
+Purpose: Understand system design and data flow
+
+Contains:
+• High-level system architecture diagram
+• Data flow diagrams (training, evaluation, inference)
+• Folder structure with data flow annotations
+• Complete training workflow for each model
+• Inference architecture for API
+• Component relationships and dependencies
+• Timeline from data to deployment
+• Design patterns used
+• Key design decisions explained
+• Dependency graph
+• Component interactions
+
+Best for: Understanding how it all fits together
+Read when: Need system design overview
+
+
+File: TRAINING_GUIDE.txt
+────────────────────────
+Size: ~600 lines
+Time to read: 15-20 minutes
+Purpose: Know exactly what happens when you run each script
+
+Contains:
+• Command-by-command walkthrough
+• What each training script does (step-by-step)
+• Expected console output examples
+• Files created by each script (with sizes)
+• Runtime expectations (CPU and GPU)
+• Performance quality checks
+• API server setup and usage
+• Code examples for using API (Python, cURL, PowerShell)
+• Interactive documentation access
+• Troubleshooting guide
+• Model performance comparison table
+
+Best for: Running the system and understanding output
+Read when: About to execute training scripts
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTATION BY TOPIC
+═══════════════════════════════════════════════════════════════════════════════
+
+TOPIC: Getting Started
+──────────────────────
+QUICK_START.txt          → Quick installation and first run
+README.md                → Full overview and context
+TRAINING_GUIDE.txt       → What to expect when running
+
+TOPIC: Understanding the Models
+────────────────────────────────
+README.md                → Model descriptions and math
+notebooks/02_MLP_Model.ipynb → Interactive MLP learning
+notebooks/03_LSTM_Model.ipynb → Interactive LSTM learning
+notebooks/04_Autoencoder.ipynb → Interactive autoencoder learning
+TECHNICAL_GLOSSARY.txt   → Term definitions
+
+TOPIC: Implementation Details
+──────────────────────────────
+training/*.py            → Source code with docstrings
+utils/*.py               → Utility modules with docstrings
+ARCHITECTURE.txt         → Code component organization
+Code comments            → In-line explanations
+
+TOPIC: Training and Evaluation
+───────────────────────────────
+TRAINING_GUIDE.txt       → Step-by-step training process
+notebooks/05_Model_Comparison.ipynb → Train and compare all 3
+README.md (Results section) → Expected performance metrics
+
+TOPIC: Using the API
+────────────────────
+README.md (API section)  → Complete API documentation
+QUICK_START.txt          → Quick API usage examples
+TRAINING_GUIDE.txt       → API server setup
+http://localhost:8000/docs → Interactive Swagger UI (when running)
+
+TOPIC: Troubleshooting
+──────────────────────
+QUICK_START.txt          → FAQ and common issues
+TRAINING_GUIDE.txt       → Runtime problems and solutions
+README.md                → Installation help
+
+TOPIC: Extending/Modifying
+───────────────────────────
+README.md (Development section) → How to extend the system
+Code docstrings          → Understanding what each function does
+TECHNICAL_GLOSSARY.txt   → Learn terminology needed to understand code
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP-BY-STEP LEARNING PATH
+═══════════════════════════════════════════════════════════════════════════════
+
+For Complete Beginners
+───────────────────────
+
+Day 1: Foundations
+├─ Read: QUICK_START.txt (10 min)
+├─ Read: README.md sections 1-3 (15 min)
+├─ Install: pip install -r requirements.txt (5 min)
+└─ Time: 30 minutes
+
+Day 2: First Training
+├─ Read: TRAINING_GUIDE.txt (command 1) (5 min)
+├─ Run: python training/train_mlp.py (2-3 min)
+├─ Observe: Console output and generated files (5 min)
+├─ View: Training plots in images/mlp/ (5 min)
+└─ Time: 20 minutes
+
+Day 3: Understanding Models
+├─ Read: README.md model architecture sections (15 min)
+├─ Open: notebooks/01_EDA.ipynb
+├─ Run: Each cell, observe outputs (10 min)
+├─ Open: notebooks/02_MLP_Model.ipynb
+├─ Read: Model explanation cells (10 min)
+├─ Run: Training cell, observe results (2 min)
+└─ Time: 37 minutes
+
+Day 4: Other Models & Comparison
+├─ Open: notebooks/03_LSTM_Model.ipynb
+├─ Run: LSTM training (2 min)
+├─ Read: LSTM concepts (10 min)
+├─ Open: notebooks/04_Autoencoder.ipynb
+├─ Run: Autoencoder training (5 min)
+├─ Open: notebooks/05_Model_Comparison.ipynb
+├─ Run: Complete comparison (3 min)
+├─ Analyze: Generated comparison charts (5 min)
+└─ Time: 30 minutes
+
+Day 5: API and Deployment
+├─ Run: python app.py (1 min)
+├─ Visit: http://localhost:8000/docs (5 min)
+├─ Try: POST /predict with test data (5 min)
+├─ Read: README.md API section (10 min)
+├─ Read: Deployment section (5 min)
+└─ Time: 26 minutes
+
+Day 6: Deeper Understanding
+├─ Read: TECHNICAL_GLOSSARY.txt (15 min)
+├─ Read: ARCHITECTURE.txt (30 min)
+├─ Study: Code in training/*.py (30 min)
+├─ Review: Code in utils/*.py (20 min)
+└─ Time: 95 minutes, Total for week: ~4 hours
+
+
+For Experienced ML Engineers
+─────────────────────────────
+
+Hour 1:
+├─ Skim: README.md key sections (10 min)
+├─ Read: ARCHITECTURE.txt (20 min)
+├─ Review: training/*.py (15 min)
+└─ Review: utils/*.py (15 min)
+
+Hour 2:
+├─ Run: All training scripts (8 min actual + waiting)
+├─ Analyze: Generated metrics and visualizations (20 min)
+├─ Review: notebooks/05_Model_Comparison.ipynb (10 min)
+├─ Test: API endpoints (10 min)
+└─ Plan: Modifications and extensions (12 min)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FILE LOCATION QUICK REFERENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+Documentation
+├─ README.md                    ← Start here for overview
+├─ QUICK_START.txt              ← Quick setup guide
+├─ PROJECT_SUMMARY.txt          ← What was built
+├─ TECHNICAL_GLOSSARY.txt       ← Term definitions
+├─ ARCHITECTURE.txt             ← System design
+├─ TRAINING_GUIDE.txt           ← Training walkthrough
+└─ DOCUMENTATION_INDEX.txt      ← This file
+
+Source Code - Models
+├─ training/train_mlp.py        ← MLP model training
+├─ training/train_lstm.py       ← LSTM model training
+└─ training/train_autoencoder.py ← Autoencoder training
+
+Utilities
+├─ utils/data_loader.py         ← Data pipeline
+├─ utils/metrics.py             ← Evaluation metrics
+├─ utils/plotting.py            ← Visualization
+└─ utils/__init__.py            ← Package initialization
+
+API & Deployment
+├─ app.py                       ← FastAPI application
+
+Data & Models
+├─ data/final_data.csv          ← Processed dataset
+├─ data/scaler.pkl              ← Training data normalization
+├─ models/*.h5                  ← Trained neural networks
+└─ models/*_scaler.pkl          ← Per-model normalization
+
+Jupyter Notebooks
+├─ notebooks/01_EDA.ipynb           ← Data exploration
+├─ notebooks/02_MLP_Model.ipynb     ← MLP training
+├─ notebooks/03_LSTM_Model.ipynb    ← LSTM training
+├─ notebooks/04_Autoencoder.ipynb   ← Autoencoder training
+└─ notebooks/05_Model_Comparison.ipynb ← Model comparison
+
+Analysis & Visualizations
+├─ images/mlp/              ← MLP model plots
+├─ images/lstm/             ← LSTM model plots
+├─ images/autoencoder/      ← Autoencoder plots
+├─ images/comparison/       ← Cross-model comparison plots
+└─ images/evaluation/       ← Additional analysis plots
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMMON QUESTIONS - WHERE TO FIND ANSWERS
+═══════════════════════════════════════════════════════════════════════════════
+
+Q: How do I get started?
+A: Read QUICK_START.txt (5 mins to get running)
+
+Q: What does each model do?
+A: Read README.md sections on MLP, LSTM, Autoencoder
+
+Q: How do I interpret the mathematical notation?
+A: Check TECHNICAL_GLOSSARY.txt or README.md
+
+Q: What happens when I run the training scripts?
+A: Read TRAINING_GUIDE.txt for exact step-by-step walkthrough
+
+Q: How do I use the API?
+A: See examples in TRAINING_GUIDE.txt or README.md API section
+
+Q: What's the expected performance?
+A: Check TRAINING_GUIDE.txt "Quality Check" sections
+
+Q: How do the components work together?
+A: Read ARCHITECTURE.txt data flow diagrams
+
+Q: How do I modify hyperparameters?
+A: See training/*.py files and README.md hyperparameter section
+
+Q: What's in each folder?
+A: See README.md project structure or ARCHITECTURE.txt
+
+Q: How do I deploy this to production?
+A: See README.md Deployment section
+
+Q: I'm getting an error, what do I do?
+A: Check QUICK_START.txt Troubleshooting section
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RECOMMENDED READING ORDER
+═══════════════════════════════════════════════════════════════════════════════
+
+For First-Time Users:
+1. QUICK_START.txt (5 min)
+2. README.md - Overview section (10 min)
+3. Run training scripts (5-10 min)
+4. notebooks/01_EDA.ipynb (10 min)
+5. TRAINING_GUIDE.txt (15 min)
+6. README.md - Model sections (15 min)
+7. notebooks/02-04_*.ipynb (30 min)
+
+For Complete Understanding:
+1. README.md (30 min)
+2. ARCHITECTURE.txt (30 min)
+3. TRAINING_GUIDE.txt (20 min)
+4. All notebooks (60 min)
+5. Code files with docstrings (45 min)
+6. TECHNICAL_GLOSSARY.txt (reference as needed)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTATION QUALITY CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ README.md covers:
+  • Project overview
+  • Mathematical concepts
+  • Model architectures
+  • Evaluation metrics
+  • API documentation
+  • Deployment guidance
+
+✓ QUICK_START.txt covers:
+  • Installation steps
+  • Quick run commands
+  • Expected output
+  • Troubleshooting
+
+✓ TRAINING_GUIDE.txt covers:
+  • Step-by-step for each model
+  • Console output examples
+  • Expected files created
+  • Performance metrics
+  • API usage examples
+
+✓ TECHNICAL_GLOSSARY.txt covers:
+  • 100+ technical terms
+  • Formulas and equations
+  • Project context
+  • Quick reference
+
+✓ ARCHITECTURE.txt covers:
+  • System design
+  • Data flow diagrams
+  • Component relationships
+  • Timeline
+  • Design patterns
+
+✓ PROJECT_SUMMARY.txt covers:
+  • Completion checklist
+  • Deliverables verification
+  • Statistics
+  • Learning outcomes
+
+✓ Code Docstrings cover:
+  • Function purposes
+  • Parameter descriptions
+  • Return value details
+  • Usage examples
+
+✓ Jupyter Notebooks cover:
+  • Interactive learning
+  • Conceptual explanations
+  • Code examples
+  • Visualizations
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+GETTING HELP
+═══════════════════════════════════════════════════════════════════════════════
+
+Problem: Terminology you don't understand
+→ Solution: Check TECHNICAL_GLOSSARY.txt
+
+Problem: Don't know where to start
+→ Solution: Read QUICK_START.txt
+
+Problem: Getting an error
+→ Solution: Check QUICK_START.txt Troubleshooting section
+
+Problem: Want to understand the system
+→ Solution: Read ARCHITECTURE.txt
+
+Problem: Confused about what output to expect
+→ Solution: Read TRAINING_GUIDE.txt
+
+Problem: Want to modify the code
+→ Solution: Read code docstrings and README.md Development section
+
+Problem: Need complete reference
+→ Solution: Read README.md
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SUMMARY: YOU NOW HAVE
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ 6 Documentation files (2,500+ lines)
+✓ 5 Jupyter notebooks (interactive learning)
+✓ 3 Training scripts (MLP, LSTM, Autoencoder)
+✓ 3 Utility modules (data, metrics, plotting)
+✓ 1 API application (FastAPI)
+✓ 30+ comprehensive visualizations (after training)
+✓ 100+ technical term definitions
+✓ Complete architectural documentation
+✓ Step-by-step training guides
+✓ Production-ready code with docstrings
+
+You're ready to:
+• Get started in minutes (QUICK_START.txt)
+• Learn from code and notebooks
+• Deploy a prediction API
+• Extend and customize the system
+• Understand deep learning concepts
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Start reading: QUICK_START.txt
+
+═══════════════════════════════════════════════════════════════════════════════
